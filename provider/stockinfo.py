@@ -180,23 +180,4 @@ class StockInfoProviderImplementation(StockInfoProvider):
 
 
 def get_stock_info_provider(ticker: str):
-    return MSFTStockInfoProvider(ticker)
-
-
-class MSFTStockInfoProvider(StockInfoProviderImplementation):
-    pass
-    # @property
-    # def ops_cash_flow(self):
-    #     return 72_703
-
-    # @property
-    # def total_cash(self):
-    #     return 125_407
-
-    # @property
-    # def total_debt(self):
-    #     return 8_051 + 50_007
-    #
-    # @property
-    # def cash_flow_growth_rate_1_5(self):
-    #     return 16.73
+    return StockInfoProviderImplementation(ticker)
