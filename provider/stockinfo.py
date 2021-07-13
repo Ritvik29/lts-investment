@@ -1,11 +1,16 @@
 from __future__ import absolute_import
 
 import finviz
+import yfinance
+
 import functools
-from .utils import billion_to_million
+from .utils import billion_to_million, to_million
 
 
 class StockInfoProvider:
+    @property
+    def ticker(self):
+        raise NotImplementedError
 
     @property
     def eps_next_5_years(self):
@@ -117,8 +122,28 @@ class StockInfoProvider:
     def total_debt(self):
         raise NotImplementedError
 
+    @property
+    def previous_close(self):
+        raise NotImplementedError
+
+    @property
+    def last_close(self):
+        return self.previous_close
+
 
 class StockInfoProviderImplementation(StockInfoProvider):
+    @property
+    def ticker(self):
+        return self._ticker
+
+    @functools.cached_property
+    def _yahoo_finance(self):
+        return yfinance.Ticker(self.ticker)
+
+    @property
+    def previous_close(self):
+        return self._yahoo_finance.info.get('previousClose')
+
     def __init__(self, ticker: str):
         self._ticker = ticker
 
@@ -141,15 +166,17 @@ class StockInfoProviderImplementation(StockInfoProvider):
 
     @property
     def ops_cash_flow(self):
-        pass
+        return to_million(self._yahoo_finance.info.get('operatingCashflow'))
 
     @property
     def total_cash(self):
-        pass
+        return to_million(self._yahoo_finance.info.get('totalCash'))
 
     @property
     def total_debt(self):
-        pass
+        balancesheet = self._yahoo_finance.quarterly_balancesheet
+        debt = balancesheet.loc['Short Long Term Debt'][0] + balancesheet.loc['Long Term Debt'][0]
+        return to_million(debt)
 
 
 def get_stock_info_provider(ticker: str):
@@ -157,18 +184,19 @@ def get_stock_info_provider(ticker: str):
 
 
 class MSFTStockInfoProvider(StockInfoProviderImplementation):
-    @property
-    def ops_cash_flow(self):
-        return 72_703
+    pass
+    # @property
+    # def ops_cash_flow(self):
+    #     return 72_703
 
-    @property
-    def total_cash(self):
-        return 125_407
+    # @property
+    # def total_cash(self):
+    #     return 125_407
 
-    @property
-    def total_debt(self):
-        return 8_051 + 50_007
-
-    @property
-    def cash_flow_growth_rate_1_5(self):
-        return 16.73
+    # @property
+    # def total_debt(self):
+    #     return 8_051 + 50_007
+    #
+    # @property
+    # def cash_flow_growth_rate_1_5(self):
+    #     return 16.73
