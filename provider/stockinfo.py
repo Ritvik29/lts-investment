@@ -20,6 +20,7 @@ class StockInfoProvider:
     def cash_flow_growth_rate_1_5(self):
         return self.eps_next_5_years
 
+
     @property
     def cash_flow_growth_rate_6_10(self):
         return self.cash_flow_growth_rate_1_5 / 2.0
@@ -66,7 +67,7 @@ class StockInfoProvider:
         ]
 
         for limit, rate in rates:
-            if self.beta < limit:
+            if self.beta <= limit:
                 return rate / 100
 
     @property
@@ -153,7 +154,6 @@ class StockInfoProviderImplementation(StockInfoProvider):
 
     @property
     def eps_next_5_years(self) -> float:
-        # Remove percentage % at the end of the str
         return float(self._finviz_info.get('EPS next 5Y')[:-1])
 
     @property
