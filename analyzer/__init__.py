@@ -1,1 +1,1 @@
-from .ivc import IntrinsicValueCalculatorImplementation, IntrinsicValueCalculator
+from .ivc import get_intrinsic_value_calculator, IntrinsicValueCalculator

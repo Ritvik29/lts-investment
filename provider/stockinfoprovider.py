@@ -42,15 +42,15 @@ class StockInfoProvider:
 
     @property
     def last_close(self) -> float:
-        raise NotImplementedError
+        return self.previous_close
 
     @property
     def ops_cashflow(self) -> float:
-        raise NotImplementedError
+        return self.operating_cashflow
 
     @property
     def shares_outstanding(self) -> int:
-        raise NotImplementedError
+        return self.total_shares
 
     @property
     def ticker(self) -> str:

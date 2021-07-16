@@ -1,4 +1,4 @@
-from provider import StockInfoProvider
+from provider import StockInfoProvider, get_stock_info_provider
 
 US = 'us'
 CHINA = 'ch'
@@ -59,7 +59,7 @@ class IntrinsicValueCalculator:
 
 
 class IntrinsicValueCalculatorImplementation(IntrinsicValueCalculator):
-    def __init__(self, ticker: str, stock_info_provider: StockInfoProvider, country: str = US):
+    def __init__(self, ticker: str, stock_info_provider: StockInfoProvider, country: str):
         self._ticker = ticker
         self._country = country
         self._provider = stock_info_provider
@@ -120,3 +120,11 @@ class IntrinsicValueCalculatorImplementation(IntrinsicValueCalculator):
     @property
     def discount(self) -> float:
         return 100 * ((self._provider.last_close / self.final_intrinsic_value_per_share) - 1)
+
+
+def get_intrinsic_value_calculator(ticker: str,
+                                   stock_info_provider: StockInfoProvider = None,
+                                   stock_country: str = US) -> IntrinsicValueCalculator:
+    if not stock_info_provider:
+        stock_info_provider = get_stock_info_provider(ticker)
+    return IntrinsicValueCalculatorImplementation(ticker, stock_info_provider, stock_country)
