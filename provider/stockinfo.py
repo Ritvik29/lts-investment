@@ -5,7 +5,7 @@ import functools
 import finviz
 import yfinance
 
-from .utils import to_million, billion_to_million
+from .utils import to_million, from_any_to_million, first_valid_index, last_valid_index
 
 
 class StockInfoProvider:
@@ -17,7 +17,7 @@ class StockInfoProvider:
         raise NotImplementedError
 
     @property
-    def total_shares(self) -> int:
+    def total_shares(self) -> float:
         raise NotImplementedError
 
     @property
@@ -49,12 +49,22 @@ class StockInfoProvider:
         return self.operating_cashflow
 
     @property
-    def shares_outstanding(self) -> int:
+    def shares_outstanding(self) -> float:
         return self.total_shares
 
     @property
     def ticker(self) -> str:
         return self._ticker
+
+    @staticmethod
+    def _get_or_default(d, k: str, default: float = 0.0, index_selection=first_valid_index) -> float:
+        # TODO:
+        try:
+            v = d.loc[k]
+            index = index_selection(v)
+            return v.loc[index]
+        except:
+            return default
 
 
 class FinvizProvider(StockInfoProvider):
@@ -67,8 +77,8 @@ class FinvizProvider(StockInfoProvider):
         return float(self._finviz_info.get('Beta'))
 
     @property
-    def total_shares(self) -> int:
-        return billion_to_million(self._finviz_info.get('Shs Outstand'))
+    def total_shares(self) -> float:
+        return from_any_to_million(self._finviz_info.get('Shs Outstand'))
 
     @property
     def eps_next_5_years(self) -> float:
@@ -101,7 +111,7 @@ class YahooProvider(StockInfoProvider):
         raise NotImplementedError
 
     @property
-    def total_shares(self) -> int:
+    def total_shares(self) -> float:
         raise NotImplementedError
 
     @property
@@ -123,7 +133,10 @@ class YahooProvider(StockInfoProvider):
     @property
     def total_debt(self) -> float:
         balancesheet = self._yahoo_finance.quarterly_balancesheet
-        debt = balancesheet.loc['Short Long Term Debt'][0] + balancesheet.loc['Long Term Debt'][0]
+        debt = \
+            self._get_or_default(balancesheet, 'Long Term Debt', default=0.0, index_selection=first_valid_index) + \
+            self._get_or_default(balancesheet, 'Short Long Term Debt', default=0.0, index_selection=first_valid_index)
+
         return to_million(debt)
 
 
@@ -154,7 +167,7 @@ class HybridProvider(StockInfoProvider):
         return self._yahoo.total_debt
 
     @property
-    def total_shares(self) -> int:
+    def total_shares(self) -> float:
         return self._finviz.total_shares
 
     @property

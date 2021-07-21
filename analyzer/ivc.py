@@ -24,7 +24,7 @@ def discount_rate(beta: float) -> float:
 
 def cashflow_growth_rate_20_years(country: str) -> float:
     if country == US:
-        return 1.48
+        return 4.18
     return 7.0
 
 
@@ -54,7 +54,7 @@ class IntrinsicValueCalculator:
         raise NotImplementedError
 
     @property
-    def operating_cash_flow_projected(self) -> list[tuple[float, float, float]]:
+    def operating_cash_flow_projected(self):
         raise NotImplementedError
 
 
@@ -83,7 +83,7 @@ class IntrinsicValueCalculatorImplementation(IntrinsicValueCalculator):
         raise ValueError("Years should beb between 1-20 inclusive")
 
     @property
-    def operating_cash_flow_projected(self) -> list[tuple[float, float, float]]:
+    def operating_cash_flow_projected(self):
         output = [
             (self._provider.operating_cashflow, 1, self._provider.operating_cashflow)
         ]
@@ -104,7 +104,9 @@ class IntrinsicValueCalculatorImplementation(IntrinsicValueCalculator):
     @property
     def less_debt_per_share(self) -> float:
         shares = self._provider.shares_outstanding
-        return self._provider.total_debt / shares if shares else 0.0
+        total_debt = self._provider.total_debt
+
+        return total_debt / shares if shares else 0.0
 
     @property
     def plus_cash_per_share(self) -> float:
